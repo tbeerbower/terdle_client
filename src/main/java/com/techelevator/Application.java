@@ -3,6 +3,8 @@ package com.techelevator;
 import com.techelevator.utils.BasicConsole;
 import com.techelevator.utils.SystemInOutConsole;
 
+import java.util.Optional;
+
 /**
  * Application is the class that launches the TErdle application.
  * 
@@ -12,7 +14,8 @@ import com.techelevator.utils.SystemInOutConsole;
 public class Application {
 
     // For communication with the server REST API
-    private static final String API_BASE_URL = "http://localhost:9000/";
+    private static final String API_BASE_URL =
+            Optional.of(System.getenv("API_BASE_URL")).orElse("http://localhost:9000/");
 
     public static void main(String[] args) {
 
