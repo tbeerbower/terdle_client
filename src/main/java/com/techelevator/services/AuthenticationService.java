@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
  **/
 public class AuthenticationService {
 
-    private final String API_BASE_URL;
+    private final String apiBaseUrl;
     private final RestTemplate restTemplate = new RestTemplate();
 
     /**
@@ -27,7 +27,7 @@ public class AuthenticationService {
      * @param url Base URL for the server REST API
      */
     public AuthenticationService(String url) {
-        this.API_BASE_URL = url;
+        this.apiBaseUrl = url;
     }
 
     /**
@@ -40,7 +40,7 @@ public class AuthenticationService {
         AuthenticatedUser user = null;
         try {
             ResponseEntity<AuthenticatedUser> response =
-                    restTemplate.exchange(API_BASE_URL + "login", HttpMethod.POST, entity, AuthenticatedUser.class);
+                    restTemplate.exchange(apiBaseUrl + "login", HttpMethod.POST, entity, AuthenticatedUser.class);
             user = response.getBody();
         } catch (RestClientResponseException | ResourceAccessException e) {
             BasicLogger.log(e.getMessage());

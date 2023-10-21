@@ -20,7 +20,7 @@ import java.util.List;
  **/
 public class GameService {
 
-    private final String API_BASE_URL;
+    private final String apiBaseUrl;
     private final RestTemplate restTemplate = new RestTemplate();
 
     // credential token for the currently logged-in user
@@ -34,7 +34,7 @@ public class GameService {
      * @param url Base URL for the server REST API
      */
     public GameService(String url) {
-        this.API_BASE_URL = url;
+        this.apiBaseUrl = url;
     }
 
     /**
@@ -53,7 +53,7 @@ public class GameService {
     public List<Game> getAllGames() {
         try {
             List<Game> games = new ArrayList<Game>();
-            ResponseEntity<Game[]> response = restTemplate.exchange(API_BASE_URL + "games", HttpMethod.GET,
+            ResponseEntity<Game[]> response = restTemplate.exchange(apiBaseUrl + "games", HttpMethod.GET,
                     makeAuthEntity(), Game[].class);
             games = new ArrayList<>(Arrays.asList(response.getBody()));
             return games;
@@ -65,7 +65,7 @@ public class GameService {
 
     public Game getTodaysGame() {
         try {
-            ResponseEntity<Game> response = restTemplate.exchange(API_BASE_URL + "games/today", HttpMethod.GET,
+            ResponseEntity<Game> response = restTemplate.exchange(apiBaseUrl + "games/today", HttpMethod.GET,
                     makeAuthEntity(), Game.class);
             return response.getBody();
         } catch (RestClientResponseException | ResourceAccessException e) {
@@ -82,7 +82,7 @@ public class GameService {
     public Game add(Game newGame) {
         try {
             HttpEntity<Game> entity = makeGameEntity(newGame);
-            return restTemplate.postForObject(API_BASE_URL + "games", entity, Game.class);
+            return restTemplate.postForObject(apiBaseUrl + "games", entity, Game.class);
         } catch (RestClientResponseException | ResourceAccessException e) {
             BasicLogger.log(e.getMessage());
             return null;
@@ -97,7 +97,7 @@ public class GameService {
     public Game update(Game updatedGame) {
         try {
             HttpEntity<Game> entity = makeGameEntity(updatedGame);
-            ResponseEntity<Game> response = restTemplate.exchange(String.format("%s/games/%d", API_BASE_URL, updatedGame.getGameId()), HttpMethod.PUT,
+            ResponseEntity<Game> response = restTemplate.exchange(String.format("%s/games/%d", apiBaseUrl, updatedGame.getGameId()), HttpMethod.PUT,
                     entity, Game.class);
             return response.getBody();
         }  catch (RestClientResponseException | ResourceAccessException e) {
@@ -113,7 +113,7 @@ public class GameService {
      */
     public boolean delete(int id) {
         try {
-            restTemplate.exchange(String.format("%s/games/%d", API_BASE_URL, id), HttpMethod.DELETE, makeAuthEntity(), Void.class);
+            restTemplate.exchange(String.format("%s/games/%d", apiBaseUrl, id), HttpMethod.DELETE, makeAuthEntity(), Void.class);
             return true;
         } catch (RestClientResponseException | ResourceAccessException e) {
             BasicLogger.log(e.getMessage());
@@ -124,7 +124,7 @@ public class GameService {
     public UserGame getUserGame(int userId, int gameId) {
         try {
             ResponseEntity<UserGame> response = restTemplate.exchange(
-                    API_BASE_URL + "users/" + userId + "/games/" + gameId,
+                    apiBaseUrl + "users/" + userId + "/games/" + gameId,
                     HttpMethod.GET, makeAuthEntity(), UserGame.class);
             return response.getBody();
         } catch (RestClientResponseException | ResourceAccessException e) {
@@ -146,7 +146,7 @@ public class GameService {
     public List<UserGame> getUserGames(int userId) {
         try {
             ResponseEntity<UserGame[]> response = restTemplate.exchange(
-                    API_BASE_URL + "users/" + userId + "/games",
+                    apiBaseUrl + "users/" + userId + "/games",
                     HttpMethod.GET, makeAuthEntity(), UserGame[].class);
             return new ArrayList<>(Arrays.asList(response.getBody()));
         } catch (RestClientResponseException | ResourceAccessException e) {
@@ -163,7 +163,7 @@ public class GameService {
     public UserGame createUserGame(UserGame userGame) {
         try {
             return restTemplate.postForObject(
-                    API_BASE_URL + "users/" + userGame.getUserId() + "/games",
+                    apiBaseUrl + "users/" + userGame.getUserId() + "/games",
                     makeUserGameEntity(userGame), UserGame.class);
         } catch (RestClientResponseException | ResourceAccessException e) {
             BasicLogger.log(e.getMessage());
@@ -174,7 +174,7 @@ public class GameService {
     public boolean updateGame(UserGame userGame) {
         try {
             restTemplate.put(
-                    API_BASE_URL + "users/" + userGame.getUserId() + "/games/" + userGame.getGameId(),
+                    apiBaseUrl + "users/" + userGame.getUserId() + "/games/" + userGame.getGameId(),
                     makeUserGameEntity(userGame), UserGame.class);
         } catch (RestClientResponseException e) {
             BasicLogger.log(e.getResponseBodyAsString());
