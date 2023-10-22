@@ -16,21 +16,12 @@ import java.util.Map;
  * It depends on an object that implements the BasicConsole interface to handle reading from and writing to the console.
  */
 public class ApplicationView {
+    public static final int VERTICAL_CELL_PADDING = 1;
+    public static final int HORIZONTAL_CELL_PADDING = 2;
 
-    /*
-     * The following constants support printing to the console in color.
-     *
-     *     Example: https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
-     *     Here we use (char)27 instead of '\u001B' (hex 1B == dec 27) shown in the example. They are the same character.
-     *     Escape codes for colors: https://en.wikipedia.org/wiki/ANSI_escape_code#Escape_sequences
-     */
-
-    // TODO: Should be static!
-    private final String FOREGROUND_DEFAULT = (char) 27 + "[39m";
-    private final String FOREGROUND_RED = (char) 27 + "[31m";
-    private final String FOREGROUND_GREEN = (char) 27 + "[32m";
-    private final String FOREGROUND_BLUE = (char) 27 + "[34m";
-
+    private static final TextEffect ERROR_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_WHITE, TextEffect.Code.RED);
+    private static final TextEffect SUCCESS_COLORS = new TextEffect(TextEffect.Code.GREEN);
+    private static final TextEffect MENU_COLORS = new TextEffect(TextEffect.Code.BLUE);
     private static final TextEffect NO_MATCH_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_WHITE, TextEffect.Code.BLACK);
     private static final TextEffect WRONG_LOCATION_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_YELLOW, TextEffect.Code.BLACK);
     private static final TextEffect EXACT_MATCH_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_GREEN);
@@ -68,7 +59,7 @@ public class ApplicationView {
      * @param message the message to show
      */
     public void displayErrorMessage(String message) {
-        console.printErrorMessage(FOREGROUND_RED + message + FOREGROUND_DEFAULT);
+        console.printErrorMessage(ERROR_COLORS.apply(message));
         console.printBlankLine();
     }
 
@@ -77,7 +68,7 @@ public class ApplicationView {
      * @param message the message to show
      */
     public void displaySuccessMessage(String message) {
-        console.printMessage(FOREGROUND_GREEN + message + FOREGROUND_DEFAULT);
+        console.printErrorMessage(SUCCESS_COLORS.apply(message));
         console.printBlankLine();
     }
 
@@ -86,51 +77,17 @@ public class ApplicationView {
      */
     public void displayWelcomeMessage() {
         String message = "Welcome to TErdle!";
-        console.printBanner(FOREGROUND_GREEN + message + FOREGROUND_DEFAULT);
+        console.printBanner(SUCCESS_COLORS.apply(message));
         console.printBlankLine();
-    }
-
-    /**
-     * Displays the detail view of a single game.
-     * @param game the game to display
-     */
-    public void displayGameDetail(Game game) {
-        displayMessage("Game Details:");
-        displayMessage(String.format("\tGame id: %s", game.getGameId()));
-        displayMessage(String.format("\tWord: %s", game.getWord()));
-        console.printBlankLine();
-    }
-
-    /**
-     * Displays a list of games in a table-like format.
-     *
-     * @param gameList the list of tags to display
-     */
-    public void displayGameList(List<Game> gameList) {
-        if (gameList == null) {
-            displayErrorMessage("There are no games to show.");
-        } else {
-            displayMessage("All Games:");
-            String heading1 = "  Id  Word                                  ";
-            String heading2 = "====  ========================================";
-            String row1FormatString = "%4d  %-40s";
-            displayMessage(heading1);
-            displayMessage(heading2);
-            for (Game game : gameList) {
-                displayMessage(String.format(row1FormatString, game.getGameId(), game.getWord()));
-            }
-        }
     }
 
     public void displayUserGame(UserGame game) {
-        TextGrid.Builder builder = new TextGrid.Builder(5, false).
-                setVerticalCellPadding(1).setHorizontalCellPadding(2);
+        TextGrid.Builder builder = new TextGrid.Builder(Game.WORD_LENGTH, false).
+                setVerticalCellPadding(VERTICAL_CELL_PADDING).setHorizontalCellPadding(HORIZONTAL_CELL_PADDING);
 
-        for (int guessIndex = 0; guessIndex < game.getGuesses().size(); ++guessIndex) {
-
-            UserGame.MatchPair[] matches = game.getMatches(guessIndex);
-
-            for (int charIndex = 0; charIndex < 5; ++charIndex) {
+        List<UserGame.MatchPair[]> matchesList = game.getMatches();
+        for (UserGame.MatchPair[] matches : matchesList) {
+            for (int charIndex = 0; charIndex < Game.WORD_LENGTH; ++charIndex) {
                 TextEffect colors = MATCH_COLORS.get(matches[charIndex].getMatch());
                 String guessChar = String.valueOf(matches[charIndex].getChar()).toUpperCase();
                 builder = builder.addCell(new TextGrid.Cell(colors, new TextGrid.CellText(guessChar, colors)));
@@ -146,7 +103,7 @@ public class ApplicationView {
      * @return
      */
     public String selectFromMenu(String menuTitle, String[] options) {
-        console.printBanner(FOREGROUND_BLUE + menuTitle + FOREGROUND_DEFAULT);
+        console.printBanner(MENU_COLORS.apply(menuTitle));
         String selection = console.getMenuSelection(options);
         console.printBlankLine();
         return selection;
