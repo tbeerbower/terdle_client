@@ -19,9 +19,8 @@ public class ApplicationView {
     public static final int VERTICAL_CELL_PADDING = 1;
     public static final int HORIZONTAL_CELL_PADDING = 2;
 
-    private static final TextEffect ERROR_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_WHITE, TextEffect.Code.RED);
+    private static final TextEffect ERROR_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_RED, TextEffect.Code.BLACK);
     private static final TextEffect SUCCESS_COLORS = new TextEffect(TextEffect.Code.GREEN);
-    private static final TextEffect MENU_COLORS = new TextEffect(TextEffect.Code.BLUE);
     private static final TextEffect NO_MATCH_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_WHITE, TextEffect.Code.BLACK);
     private static final TextEffect WRONG_LOCATION_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_YELLOW, TextEffect.Code.BLACK);
     private static final TextEffect EXACT_MATCH_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_GREEN);
@@ -97,19 +96,6 @@ public class ApplicationView {
     }
 
     /**
-     * Displays a list of menu options, prompting the user to select one
-     * @param menuTitle the title of the menu
-     * @param options the list of options to choose from
-     * @return
-     */
-    public String selectFromMenu(String menuTitle, String[] options) {
-        console.printBanner(MENU_COLORS.apply(menuTitle));
-        String selection = console.getMenuSelection(options);
-        console.printBlankLine();
-        return selection;
-    }
-
-    /**
      * Prompts for the values required to log-in - username & password
      * @return a UserCredentials object
      */
@@ -122,31 +108,5 @@ public class ApplicationView {
 
     public String promptForGuess(int guessNumber) {
         return console.promptForString(String.format("Enter guess number %d: ", guessNumber)).toLowerCase();
-    }
-
-    //
-    // Helper functions to support getting user input and basic validation of input values
-    //
-    private String promptForStringUpdateValue(String prompt, boolean required, String currentValue) {
-        prompt = promptWithValue(prompt, currentValue);
-        while (true) {
-            String entry = console.promptForString(prompt);
-            if (!entry.isEmpty() || !required) {
-                return entry;
-            }
-            displayErrorMessage("A value is required, please try again.");
-        }
-    }
-
-    private boolean promptForBooleanUpdateValue(String prompt, boolean currentValue) {
-        prompt = promptWithValue(prompt, currentValue ? "yes" : "no");
-        return console.promptForYesNo(prompt);
-    }
-
-    private String promptWithValue(String prompt, Object displayedValue) {
-        if (displayedValue != null) {
-            return prompt + "[" + displayedValue.toString() + "]: ";
-        }
-        return prompt + ": ";
     }
 }
