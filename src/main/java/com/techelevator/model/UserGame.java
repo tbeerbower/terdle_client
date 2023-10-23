@@ -59,30 +59,4 @@ public class UserGame extends Game {
     public boolean isSuccess() {
         return success;
     }
-
-    public List<MatchPair[]> getMatches() {
-
-        List<MatchPair[]> matchesList = new ArrayList<>();
-        for (String guess : guesses) {
-            String word = getWord();
-            MatchPair[] matches = new MatchPair[WORD_LENGTH];
-            ArrayList<Character> misses = new ArrayList<>();
-            for (int i = 0; i < WORD_LENGTH; i++) {
-                Character ch = word.charAt(i);
-                if (ch == guess.charAt(i)) {
-                    matches[i] = new MatchPair(Match.EXACT_MATCH, ch);
-                } else {
-                    misses.add(ch);
-                }
-            }
-            for (int i = 0; i < WORD_LENGTH && !misses.isEmpty(); i++) {
-                Character ch = guess.charAt(i);
-                if (word.charAt(i) != ch) {
-                    matches[i] = new MatchPair(misses.remove(ch) ? Match.WRONG_LOCATION : Match.NO_MATCH, ch);
-                }
-            }
-            matchesList.add(matches);
-        }
-        return matchesList;
-    }
 }
