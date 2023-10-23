@@ -183,6 +183,31 @@ public class GameService {
         return true;
     }
 
+    public List<UserGame.MatchPair[]> getGameMatches(UserGame userGame) {
+        List<UserGame.MatchPair[]> matchesList = new ArrayList<>();
+        for (String guess : userGame.getGuesses()) {
+            String word = userGame.getWord();
+            UserGame.MatchPair[] matches = new UserGame.MatchPair[Game.WORD_LENGTH];
+            ArrayList<Character> misses = new ArrayList<>();
+            for (int i = 0; i < Game.WORD_LENGTH; i++) {
+                Character ch = word.charAt(i);
+                if (ch == guess.charAt(i)) {
+                    matches[i] = new UserGame.MatchPair(UserGame.Match.EXACT_MATCH, ch);
+                } else {
+                    misses.add(ch);
+                }
+            }
+            for (int i = 0; i < Game.WORD_LENGTH && !misses.isEmpty(); i++) {
+                Character ch = guess.charAt(i);
+                if (word.charAt(i) != ch) {
+                    matches[i] = new UserGame.MatchPair(misses.remove(ch) ? UserGame.Match.WRONG_LOCATION : UserGame.Match.NO_MATCH, ch);
+                }
+            }
+            matchesList.add(matches);
+        }
+        return matchesList;
+    }
+
     /**
      * Helper method to create the HTTP Entity that bundles the game data and the auth information together
      * to send to the server REST API.

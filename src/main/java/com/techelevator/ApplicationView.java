@@ -80,11 +80,10 @@ public class ApplicationView {
         console.printBlankLine();
     }
 
-    public void displayUserGame(UserGame game) {
+    public void displayUserGameMatches(List<UserGame.MatchPair[]> matchesList) {
         TextGrid.Builder builder = new TextGrid.Builder(Game.WORD_LENGTH, false).
                 setVerticalCellPadding(VERTICAL_CELL_PADDING).setHorizontalCellPadding(HORIZONTAL_CELL_PADDING);
 
-        List<UserGame.MatchPair[]> matchesList = game.getMatches();
         for (UserGame.MatchPair[] matches : matchesList) {
             for (int charIndex = 0; charIndex < Game.WORD_LENGTH; ++charIndex) {
                 TextEffect colors = MATCH_COLORS.get(matches[charIndex].getMatch());
