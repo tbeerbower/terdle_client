@@ -6,6 +6,8 @@ import com.techelevator.services.GameService;
 import com.techelevator.utils.BasicConsole;
 import com.techelevator.utils.BasicLogger;
 import com.techelevator.utils.Menu;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
 
@@ -94,18 +96,20 @@ public class ApplicationController {
     }
 
     private void playDailyGame() {
+        UserGame userGame = null;
+        int userId = currentUser.getUser().getId();
         Game game = gameService.getTodaysGame();
-        if (game == null) {
-            view.displayBlankLine();
-            view.displayErrorMessage("The daily game is not available!");
-        } else {
-            playGame(gameService.getOrCreateUserGame(currentUser.getUser().getId(), game));
+        if (game != null) {
+            userGame = gameService.getUserGame(userId, game.getGameId());
         }
+        if (userGame == null) {
+            userGame = gameService.createUserGame(new UserGame(userId, Game.Type.DAILY));
+        }
+        playGame(userGame);
     }
 
     private void playRandomGame() {
-        Game game = gameService.add(new Game(Game.Type.RANDOM));
-        playGame(gameService.createUserGame(new UserGame(currentUser.getUser().getId(), game)));
+        playGame(gameService.createUserGame(new UserGame(currentUser.getUser().getId(), Game.Type.RANDOM)));
     }
 
     private void playGame(UserGame userGame) {
@@ -139,14 +143,6 @@ public class ApplicationController {
         } else {
             view.displayMessage(String.format("Sorry, you didn't get it.  The word you are looking for is %s.", word));
         }
-    }
-
-    private void getOrStartTodaysGame() {
-        Game game = gameService.getTodaysGame();
-        if (game == null) {
-            game = gameService.add(new Game(Game.Type.DAILY));
-        }
-        view.displayMessage(String.format("The daily game for %s has been started.", game.getDate()));
     }
 
     private void showUserGameStats() {
@@ -212,7 +208,6 @@ public class ApplicationController {
 
     private Menu<ApplicationController> getAdminMenu() {
         return new Menu<>("Admin Menu", this, console).
-                addItem("Start Daily Game", ApplicationController::getOrStartTodaysGame).
                 addItem("Return to Main Menu", false);
     }
 }
