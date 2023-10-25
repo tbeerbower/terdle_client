@@ -15,7 +15,7 @@ public class Application {
 
     // For communication with the server REST API
     private static final String API_BASE_URL =
-            Optional.of(System.getenv("API_BASE_URL")).orElse("http://localhost:9000/");
+            Optional.ofNullable(System.getenv("API_BASE_URL")).orElse("http://localhost:9000/");
 
     public static void main(String[] args) {
 

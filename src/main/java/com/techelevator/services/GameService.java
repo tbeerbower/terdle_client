@@ -133,16 +133,6 @@ public class GameService {
         }
     }
 
-    public UserGame getOrCreateUserGame(int userId, Game game) {
-        try {
-            UserGame userGame = getUserGame(userId, game.getGameId());
-            return userGame == null ? createUserGame(new UserGame(userId, game)) : userGame;
-        } catch (RestClientResponseException | ResourceAccessException e) {
-            BasicLogger.log(e.getMessage());
-            return null;
-        }
-    }
-
     public List<UserGame> getUserGames(int userId) {
         try {
             ResponseEntity<UserGame[]> response = restTemplate.exchange(
