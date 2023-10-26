@@ -5,9 +5,7 @@ import com.techelevator.services.AuthenticationService;
 import com.techelevator.services.GameService;
 import com.techelevator.utils.BasicConsole;
 import com.techelevator.utils.BasicLogger;
-import com.techelevator.utils.Menu;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientResponseException;
+import com.techelevator.utils.MenuSystem;
 
 import java.util.List;
 
@@ -19,6 +17,39 @@ import java.util.List;
  */
 
 public class ApplicationController {
+    // Menu related constants
+    private static final String MAIN_MENU_NAME = "MainMenu";
+    private static final String ADMIN_MAIN_MENU_NAME = "AdminMainMenu";
+    private static final String ADMIN_MENU_NAME = "AdminMenu";
+    private static final String LOGIN_MENU_NAME = "LoginMenu";
+
+    private static final MenuSystem.Menu<ApplicationController> MAIN_MENU =
+            new MenuSystem.Builder<ApplicationController>().
+            addItem("Play Daily Game", ApplicationController::playDailyGame).
+            addItem("Play Random Game", ApplicationController::playRandomGame).
+            addItem("Show Game Statistics", ApplicationController::showUserGameStats).
+            addItem("Log Out", ApplicationController::logOut).
+            getMenu(MAIN_MENU_NAME, "Main Menu");
+    private static final MenuSystem.Menu<ApplicationController> ADMIN_MAIN_MENU =
+            new MenuSystem.Builder<ApplicationController>().
+            addItem("Play Daily Game", ApplicationController::playDailyGame).
+            addItem("Play Random Game", ApplicationController::playRandomGame).
+            addItem("Show Game Statistics", ApplicationController::showUserGameStats).
+            addItem("Admin Menu", ApplicationController::gotoAdminMenu).
+            addItem("Log Out", ApplicationController::logOut).
+            getMenu(ADMIN_MAIN_MENU_NAME, "Main Menu");
+    private static final MenuSystem.Menu<ApplicationController> ADMIN_MENU =
+            new MenuSystem.Builder<ApplicationController>().
+            addItem("Return to Main Menu", ApplicationController::exit).
+            getMenu(ADMIN_MENU_NAME, "Admin Menu");
+    private static final MenuSystem.Menu<ApplicationController> LOGIN_MENU =
+            new MenuSystem.Builder<ApplicationController>().
+            addItem("Login", ApplicationController::handleLogin).
+            addItem("Exit", ApplicationController::exit).
+            getMenu(LOGIN_MENU_NAME, "Login Menu");
+
+    private static final List<MenuSystem.Menu<ApplicationController>> MENUS =
+            List.of(LOGIN_MENU, MAIN_MENU, ADMIN_MAIN_MENU, ADMIN_MENU);
 
     // Service classes for communication to the REST API
     private final AuthenticationService authService;
@@ -30,8 +61,7 @@ public class ApplicationController {
     // The currently logged-in user, or null if no login
     private AuthenticatedUser currentUser;
 
-    private boolean finished = false;
-    private final BasicConsole console;
+    private final MenuSystem<ApplicationController> menuSystem;
 
     /**
      * Constructor - creates instances of the view and service classes. Dependencies are passed in
@@ -44,7 +74,7 @@ public class ApplicationController {
         view = new ApplicationView(console);
         authService = new AuthenticationService(apiBaseUrl);
         gameService = new GameService(apiBaseUrl);
-        this.console = console;
+        menuSystem = new MenuSystem<>(this, console, MENUS, LOGIN_MENU_NAME);
     }
 
     /**
@@ -54,14 +84,7 @@ public class ApplicationController {
     public void run() {
         try {
             view.displayWelcomeMessage();
-
-            while (!finished) {
-                if (currentUser == null) {
-                    handleLogin();
-                } else {
-                    getMenu().run();
-                }
-            }
+            menuSystem.run();
         } catch (Exception e) {
             /*
              * Note: A catch for general Exceptions is used here as a best practice to prevent
@@ -72,6 +95,9 @@ public class ApplicationController {
             BasicLogger.log(e);
         }
     }
+
+
+    // ***** Helper Methods ***************************************************
 
     /**
      * This application requires both correct credentials (username & password) and the Admin role to
@@ -90,8 +116,8 @@ public class ApplicationController {
             view.displayErrorMessage("Login failed.");
         } else {
             view.displaySuccessMessage("Login successful.");
-            String token = currentUser.getToken();
-            gameService.setAuthToken(token);
+            gameService.setAuthToken(currentUser.getToken());
+            menuSystem.makeMenuCurrent(currentUser.getUser().isAdmin() ? ADMIN_MAIN_MENU_NAME : MAIN_MENU_NAME);
         }
     }
 
@@ -184,30 +210,16 @@ public class ApplicationController {
         view.displayBlankLine();
     }
 
+    private void gotoAdminMenu() {
+        menuSystem.makeMenuCurrent(ADMIN_MENU_NAME);
+    }
+
     private void logOut() {
         currentUser = null;
+        exit();
     }
 
     private void exit() {
-        finished = true;
-    }
-
-    private Menu<ApplicationController> getMenu() {
-        Menu<ApplicationController> menu = new Menu<>("Main Menu", this, console).
-                addItem("Play Daily Game", ApplicationController::playDailyGame).
-                addItem("Play Random Game", ApplicationController::playRandomGame).
-                addItem("Show Game Statistics", ApplicationController::showUserGameStats);
-
-        if (currentUser.getUser().isAdmin()) {
-            menu.addSubMenu("Go to Admin Menu", getAdminMenu());
-        }
-        return menu.
-                addItem("Log Out", ApplicationController::logOut, false).
-                addItem("Exit", ApplicationController::exit, false);
-    }
-
-    private Menu<ApplicationController> getAdminMenu() {
-        return new Menu<>("Admin Menu", this, console).
-                addItem("Return to Main Menu", false);
+        menuSystem.exitCurrentMenu();
     }
 }
