@@ -20,7 +20,7 @@ public class ApplicationView {
     public static final int HORIZONTAL_CELL_PADDING = 2;
 
     private static final TextEffect ERROR_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_RED, TextEffect.Code.BLACK);
-    private static final TextEffect SUCCESS_COLORS = new TextEffect(TextEffect.Code.GREEN);
+    private static final TextEffect SUCCESS_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_GREEN);
     private static final TextEffect NO_MATCH_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_WHITE, TextEffect.Code.BLACK);
     private static final TextEffect WRONG_LOCATION_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_YELLOW, TextEffect.Code.BLACK);
     private static final TextEffect EXACT_MATCH_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_GREEN);
@@ -76,8 +76,7 @@ public class ApplicationView {
      */
     public void displayWelcomeMessage() {
         String message = "Welcome to TErdle!";
-        console.printBanner(SUCCESS_COLORS.apply(message));
-        console.printBlankLine();
+        console.printBanner(SUCCESS_COLORS, message);
     }
 
     public void displayUserGameMatches(List<UserGame.MatchPair[]> matchesList) {
@@ -88,7 +87,7 @@ public class ApplicationView {
             for (int charIndex = 0; charIndex < Game.WORD_LENGTH; ++charIndex) {
                 TextEffect colors = MATCH_COLORS.get(matches[charIndex].getMatch());
                 String guessChar = String.valueOf(matches[charIndex].getChar()).toUpperCase();
-                builder = builder.addCell(new TextGrid.Cell(colors, new TextGrid.CellText(guessChar, colors)));
+                builder = builder.addCell(colors, guessChar);
             }
         }
         displayMessage(builder.generate().toString());

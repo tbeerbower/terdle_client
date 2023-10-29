@@ -27,7 +27,7 @@ public interface BasicConsole {
 
     void printDivider();
 
-    void printBanner(String message);
+    void printBanner(TextEffect effect, String message);
 
     void printBulletedItems(String[] items);
 
