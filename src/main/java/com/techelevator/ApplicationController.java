@@ -3,9 +3,7 @@ package com.techelevator;
 import com.techelevator.model.*;
 import com.techelevator.services.AuthenticationService;
 import com.techelevator.services.GameService;
-import com.techelevator.utils.BasicConsole;
-import com.techelevator.utils.BasicLogger;
-import com.techelevator.utils.MenuSystem;
+import com.techelevator.utils.*;
 
 import java.util.List;
 
@@ -17,6 +15,11 @@ import java.util.List;
  */
 
 public class ApplicationController {
+
+    private static final TextEffect STAT_HEADER_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_WHITE, TextEffect.Code.BLACK, TextEffect.Code.BOLD, TextEffect.Code.ITALIC);
+    private static final TextEffect STAT_SUCCESS_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_GREEN, TextEffect.Code.BLACK);
+    private static final TextEffect STAT_SUMMARY_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_PURPLE, TextEffect.Code.BLACK);
+
     // Menu related constants
     private static final String MAIN_MENU_NAME = "MainMenu";
     private static final String ADMIN_MAIN_MENU_NAME = "AdminMainMenu";
@@ -178,10 +181,15 @@ public class ApplicationController {
         int successfulGames = 0;
         int totalNumberOfGuesses = 0;
 
-        view.displayBlankLine();
-        view.displayMessage("Game                   Last     Num. of");
-        view.displayMessage("Date          Word     Guess    Guesses    Success    Type");
-        view.displayMessage("==============================================================");
+        TextGrid.Builder builder = new TextGrid.Builder(5).setMaxCellHeight(2).setMaxCellWidth(10).
+                setHorizontalAlign(TextGrid.HorizontalAlign.CENTER).setVerticalAlignment(TextGrid.VerticalAlign.TOP).
+                setHorizontalCellPadding(1).setVerticalCellPadding(0);
+
+        // Header row
+        builder.addCell(STAT_HEADER_COLORS, "Date").addCell(STAT_HEADER_COLORS, "Word").
+                addCell(STAT_HEADER_COLORS, "Last Guess").addCell(STAT_HEADER_COLORS, "Guesses").
+                addCell(STAT_HEADER_COLORS, "Type");
+
         for (UserGame userGame : games) {
             int numberOfGuesses = userGame.getGuesses().size();
             if (userGame.isSuccess() || numberOfGuesses == 6) {
@@ -192,22 +200,33 @@ public class ApplicationController {
                 successfulGames++;
             }
 
-            String lastGuess = userGame.getGuesses().isEmpty() ? "     " : userGame.getGuesses().get(numberOfGuesses - 1);
-            view.displayMessage(String.format("%s    %s    %s       %d         %c        %s",
-                    userGame.getDate(), userGame.getWord(), lastGuess, numberOfGuesses,
-                    userGame.isSuccess() ? '*' : ' ', userGame.getType().name()));
+            String lastGuess = userGame.getGuesses().isEmpty() ? "" : userGame.getGuesses().get(numberOfGuesses - 1);
+            TextEffect rowColors = userGame.isSuccess() ? STAT_SUCCESS_COLORS : null;
+
+            // data row
+            builder.addCell(rowColors, userGame.getDate().toString()).
+                    addCell(rowColors, userGame.getWord()).
+                    addCell(rowColors, lastGuess).
+                    addCell(rowColors, String.valueOf(numberOfGuesses)).
+                    addCell(rowColors, userGame.getType().name());
         }
+
+        view.displayMessage(builder.generate().toString());
+
+        builder = new TextGrid.Builder(2).
+                setHorizontalAlign(TextGrid.HorizontalAlign.CENTER).setVerticalAlignment(TextGrid.VerticalAlign.TOP).
+                setHorizontalCellPadding(1).setVerticalCellPadding(0);
 
         double avgGuesses = totalNumberOfGuesses / (double) gamesCompleted;
         double successPercentage = successfulGames / (double) gamesCompleted * 100.0;
-        view.displayMessage("==============================================================");
-        view.displayMessage(String.format("Games started   : %d", gamesStarted));
-        view.displayMessage(String.format("Games completed : %d", gamesCompleted));
-        view.displayMessage(String.format("Games won       : %d", successfulGames));
-        view.displayMessage(String.format("Games won %%     : %-6.2f", successPercentage));
-        view.displayMessage(String.format("Average guesses : %-4.2f", avgGuesses));
-        view.displayBlankLine();
-        view.displayBlankLine();
+
+        builder.addCell(STAT_HEADER_COLORS, "Games started").addCell(STAT_SUMMARY_COLORS, String.valueOf(gamesStarted)).
+                addCell(STAT_HEADER_COLORS, "Games completed").addCell(STAT_SUMMARY_COLORS, String.valueOf(gamesCompleted)).
+                addCell(STAT_HEADER_COLORS, "Games won").addCell(STAT_SUMMARY_COLORS, String.valueOf(successfulGames)).
+                addCell(STAT_HEADER_COLORS, "Games won %").addCell(STAT_SUMMARY_COLORS, String.valueOf(successPercentage)).
+                addCell(STAT_HEADER_COLORS, "Average Guesses").addCell(STAT_SUMMARY_COLORS, String.valueOf(avgGuesses));
+
+        view.displayMessage(builder.generate().toString());
     }
 
     private void gotoAdminMenu() {

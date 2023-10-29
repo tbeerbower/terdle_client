@@ -11,7 +11,8 @@ import java.util.stream.Stream;
 
 public class TextEffect {
 
-    private static final Pattern pattern = Pattern.compile("\\\u001B\\[([\\d;]+)m");
+    private static final Pattern DECODE_EFFECTS_PATTERN = Pattern.compile("\\\u001B\\[([\\d;]+)m");
+    private static final Pattern DECODE_TEXT_PATTERN = Pattern.compile("\\\u001B\\[([\\d;]+)m(.*)\\\u001B\\[([\\d;]+)m");
     private static final String ESCAPE_FORMAT = "\u001B[%sm%s\u001B[0m";
     private static final Map<String, Code> codeMap = new HashMap<>();
     static {
@@ -77,7 +78,7 @@ public class TextEffect {
 
     public static TextEffect decode(String text) {
         TextEffect textEffect = new TextEffect();
-        Matcher matcher = pattern.matcher(text);
+        Matcher matcher = DECODE_EFFECTS_PATTERN.matcher(text);
         while (matcher.find()) {
             String[] codes = matcher.group(1).split(";");
             // get enum codes
@@ -86,5 +87,13 @@ public class TextEffect {
                     map(code -> codeMap.get(code)).collect(Collectors.toList()).toArray(new Code[]{}));
         }
         return textEffect;
+    }
+
+    public static String decodeText(String text) {
+        Matcher matcher = DECODE_TEXT_PATTERN.matcher(text);
+        if (matcher.find()) {
+            return matcher.group(2);
+        }
+        return null;
     }
 }

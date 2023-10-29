@@ -57,6 +57,32 @@ public class TextGrid {
 
         private static final CellText[] EMPTY_CELL_TEXTS = {};
 
+
+        private enum CornerChars {
+            BASIC(new char[]{'+', '+', '+', '+', '+', '+', '+', '+', '+', '-', '|'}),
+            XASCII_DOUBLE(new char[]{0x256C, 0x2563, 0x2569, 0x255D, 0x2560, 0x255A, 0x2566, 0x2557, 0x2554, 0x2550, 0x2551});
+            private final char[] chars;
+
+            CornerChars(char[] chars) {
+                this.chars = chars;
+            }
+
+            private String get(int index) {
+                return String.valueOf(chars[index]);
+            }
+        }
+
+        private static final int[] CORNER_CODES = {
+                0, 1, 0, 0, 2, 3, 2, 0,
+                0, 1, 0, 0, 0, 0, 0, 3,
+                0, 0, 4, 0, 2, 2, 5, 0,
+                0, 0, 4, 0, 0, 0, 0, 5,
+                0, 1, 0, 0, 0, 1, 0, 0,
+                6, 7, 6, 0, 0, 0, 0, 7,
+                0, 0, 4, 0, 0, 0, 4, 0,
+                6, 6, 8, 0, 0, 0, 0, 8,
+        };
+
         private final List<Cell> cells = new ArrayList<>();
         private VerticalAlign verticalAlign = VerticalAlign.CENTER;
         private HorizontalAlign horizontalAlign = HorizontalAlign.CENTER;
@@ -72,6 +98,7 @@ public class TextGrid {
         private int horizontalCellPadding = 0;
         private boolean hasBorder = true;
         private TextEffect fillEffect = null;
+        private CornerChars cornerChars = CornerChars.XASCII_DOUBLE;
 
         public Builder(int gridWidth) {
             this(gridWidth, true);
@@ -103,8 +130,16 @@ public class TextGrid {
             return addCell(new Cell(textLines));
         }
 
+        public Builder addCell(TextEffect fillEffect, CellText... textLines) {
+            return addCell(new Cell(fillEffect, textLines));
+        }
+
         public Builder addCell(String... textLines) {
             return addCell(Arrays.stream(textLines).map(CellText::new).toArray(CellText[]::new));
+        }
+
+        public Builder addCell(TextEffect fillEffect, String... textLines) {
+            return addCell(fillEffect, Arrays.stream(textLines).map(CellText::new).toArray(CellText[]::new));
         }
 
         public Builder setCell(int row, int col, Cell cell) throws IllegalArgumentException {
@@ -169,6 +204,11 @@ public class TextGrid {
             return this;
         }
 
+        public Builder setCornerChars(CornerChars cornerChars) {
+            this.cornerChars = cornerChars;
+            return this;
+        }
+
         public TextGrid generate() {
             gridHeight = cells.size() / gridWidth + (cells.size() % gridWidth == 0 ? 0 : 1);
             return new TextGrid(range(0, gridHeight).mapToObj(this::generateCellRow).collect(Collectors.toList()));
@@ -176,8 +216,10 @@ public class TextGrid {
 
         private String[] generateCellRow(int row) {
             int height = getPaddedCellHeight(row);
-            return range(0, gridWidth).mapToObj(col -> generateCell(row, col, getCellText(row * gridWidth + col), height, getPaddedCellWidth(col), getCellFillEffect(row * gridWidth + col)))
-                .reduce((cell1, cell2) -> range(0, hasBorder ? (height + (isLastRow(row) ? 2 : 1)) : height).mapToObj(i ->
+            return range(0, gridWidth).mapToObj(col -> generateCell(row, col,
+                            getCellText(row * gridWidth + col), height, getPaddedCellWidth(col),
+                            getCellFillEffect(row * gridWidth + col)))
+                .reduce((cell1, cell2) -> range(0, hasBorder ? (height + (row == 0 ? 2 : 1)) : height).mapToObj(i ->
                     format("%s%s", cell1[i], cell2[i])).toArray(String[]::new))
                 .orElse(new String[0]);
         }
@@ -186,18 +228,52 @@ public class TextGrid {
             boolean isLastCol = col == gridWidth - 1;
 
             if (hasBorder) {
-                String topAndBottom = format("+%s%s", "-".repeat(width), isLastCol ? "+" : "");
-                Stream<String> centerStream = range(0, height).mapToObj(textRow ->
-                        format("|%s%s", getDisplayText(cellText, row, textRow, width, cellFillEffect), isLastCol ? "|" : ""));
+                boolean isLastRow = isLastRow(row);
+                boolean isFirstRow = row == 0;
+                boolean ifFirstCol = col == 0;
 
-                return (isLastRow(row) ?
-                        of(of(topAndBottom), centerStream, of(topAndBottom)) :
-                        of(of(topAndBottom), centerStream)).flatMap(Function.identity()).toArray(String[]::new);
+                String topLeftChar = cornerChar(cellFillEffect, true, true, isFirstRow, isLastRow, ifFirstCol, isLastCol);
+                String bottomLeftChar = cornerChar(cellFillEffect, false, true, isFirstRow, isLastRow, ifFirstCol, isLastCol);
+                String topRightChar = cornerChar(cellFillEffect, true, false, isFirstRow, isLastRow, ifFirstCol, isLastCol);
+                String bottomRightChar = cornerChar(cellFillEffect, false, false, isFirstRow, isLastRow, ifFirstCol, isLastCol);
+                String verticalChar = verticalChar(cellFillEffect);
+                String horizontalChar = horizontalChar(cellFillEffect);
+
+                String top = format("%s%s%s", topLeftChar, horizontalChar.repeat(width), isLastCol ? topRightChar : "");
+                String bottom = format("%s%s%s", bottomLeftChar, horizontalChar.repeat(width), isLastCol ? bottomRightChar : "");
+                Stream<String> centerStream = range(0, height).mapToObj(textRow ->
+                        format("%s%s%s", verticalChar, getDisplayText(cellText, row, textRow, width, cellFillEffect),
+                                isLastCol ? verticalChar : ""));
+
+                return (isFirstRow ?
+                        of(of(top), centerStream, of(bottom)) : of(centerStream, of(bottom))).
+                        flatMap(Function.identity()).toArray(String[]::new);
             }
             Stream<String> centerStream = range(0, height).mapToObj(textRow ->
                     format("%s", getDisplayText(cellText, row, textRow, width, cellFillEffect)));
 
             return (of(centerStream)).flatMap(Function.identity()).toArray(String[]::new);
+        }
+
+        private String verticalChar(TextEffect cellFillEffect) {
+            return applyEffect(cellFillEffect, String.valueOf(cornerChars.get(10)));
+        }
+
+        private String horizontalChar(TextEffect cellFillEffect) {
+            return applyEffect(cellFillEffect, String.valueOf(cornerChars.get(9)));
+        }
+
+        private String cornerChar(TextEffect cellFillEffect, boolean... bits) {
+            int key = 0;
+            for (boolean bit : bits) {
+                key = (key << 1) + (bit ? 1 : 0);
+            }
+            return applyEffect(cellFillEffect, String.valueOf(cornerChars.get(CORNER_CODES[key])));
+        }
+
+        private String applyEffect(TextEffect cellFillEffect, String cc) {
+            TextEffect effect = cellFillEffect == null ? fillEffect : cellFillEffect;
+            return effect == null ? cc : effect.apply(cc);
         }
 
         private CellText[] getCellText(int index) {
@@ -253,7 +329,7 @@ public class TextGrid {
             TextEffect effect = cellFillEffect == null ? fillEffect : cellFillEffect;
             String fill = effect == null ? " ".repeat(horizontalCellPadding) :
                     effect.apply(" ".repeat(horizontalCellPadding));
-            return String.format("%s%s%s", fill, cellText.getDisplayText(textWidth, horizontalAlign), fill);
+            return String.format("%s%s%s", fill, cellText.getDisplayText(textWidth, horizontalAlign, horizontalChar(cellFillEffect), cellFillEffect), fill);
         }
 
         private boolean isLastRow(int row) {
@@ -303,12 +379,12 @@ public class TextGrid {
             return text;
         }
 
-        public String getDisplayText(int width, HorizontalAlign horizontalAlign) {
+        public String getDisplayText(int width, HorizontalAlign horizontalAlign, String horizontalChar, TextEffect cellFillEffect) {
             String displayText = horizontalAlign == HorizontalAlign.CENTER ? centerString(text, width) :
-                format(format("%%%s%d.%ds", horizontalAlign == HorizontalAlign.LEFT ? "-" : "", width, width), text);
+                format(format("%%%s%d.%ds", horizontalAlign == HorizontalAlign.LEFT ? horizontalChar : "", width, width), text);
+            TextEffect cellEffect = cellFillEffect == null ? effect : cellFillEffect;
 
-            return effect == null ? displayText : effect.apply(displayText);
-
+            return cellEffect == null ? displayText : cellEffect.apply(displayText);
         }
 
         private static String centerString(String s, int width) {

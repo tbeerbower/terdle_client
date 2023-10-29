@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @param <T> the type of the target object for the menu system
  */
 public class MenuSystem<T> {
-    private static final TextEffect MENU_COLORS = new TextEffect(TextEffect.Code.BLUE);
+    private static final TextEffect MENU_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_BLUE);
     private final BasicConsole console;
     private final T target;
     private final Map<String,Menu<T>> menus;
@@ -79,7 +79,7 @@ public class MenuSystem<T> {
         Menu<T> menu = getCurrentMenu();
 
         console.printBlankLine();
-        console.printBanner(MENU_COLORS.apply(menu.title));
+        console.printBanner(MENU_COLORS, menu.title);
         for (int i = 0; i < menu.items.length; ++i) {
             Item<T> item = menu.items[i];
             console.printMessage(String.format("%d) %s", i + 1, item.geText()));
