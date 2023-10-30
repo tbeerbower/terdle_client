@@ -14,6 +14,8 @@ import java.util.Scanner;
 
 public class SystemInOutConsole implements BasicConsole {
 
+    private static final TextEffect ERROR_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_RED, TextEffect.Code.BLACK);
+
     private final Scanner input = new Scanner(System.in);
 
     @Override
@@ -39,7 +41,7 @@ public class SystemInOutConsole implements BasicConsole {
 
     @Override
     public void printErrorMessage(String message) {
-        System.out.println("***" + message + "***");
+        printBanner(ERROR_COLORS, message);
     }
 
     @Override

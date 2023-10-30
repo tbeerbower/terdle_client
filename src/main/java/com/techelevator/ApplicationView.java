@@ -19,7 +19,6 @@ public class ApplicationView {
     public static final int VERTICAL_CELL_PADDING = 1;
     public static final int HORIZONTAL_CELL_PADDING = 2;
 
-    private static final TextEffect ERROR_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_RED, TextEffect.Code.BLACK);
     private static final TextEffect SUCCESS_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_GREEN);
     private static final TextEffect NO_MATCH_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_WHITE, TextEffect.Code.BLACK);
     private static final TextEffect WRONG_LOCATION_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_YELLOW, TextEffect.Code.BLACK);
@@ -58,8 +57,7 @@ public class ApplicationView {
      * @param message the message to show
      */
     public void displayErrorMessage(String message) {
-        console.printErrorMessage(ERROR_COLORS.apply(message));
-        console.printBlankLine();
+        console.printErrorMessage(message);
     }
 
     /**
@@ -67,8 +65,7 @@ public class ApplicationView {
      * @param message the message to show
      */
     public void displaySuccessMessage(String message) {
-        console.printErrorMessage(SUCCESS_COLORS.apply(message));
-        console.printBlankLine();
+        console.printBanner(SUCCESS_COLORS, message);
     }
 
     /**
