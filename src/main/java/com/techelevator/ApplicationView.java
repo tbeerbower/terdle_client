@@ -4,6 +4,7 @@ import com.techelevator.model.Game;
 import com.techelevator.model.UserCredentials;
 import com.techelevator.model.UserGame;
 import com.techelevator.utils.BasicConsole;
+import com.techelevator.utils.MenuSystem;
 import com.techelevator.utils.TextEffect;
 import com.techelevator.utils.TextGrid;
 
@@ -95,7 +96,7 @@ public class ApplicationView {
      * @return a UserCredentials object
      */
     public UserCredentials promptForCredentials() {
-        console.printMessage("Please login.");
+        console.printBanner(MenuSystem.MENU_COLORS, "Please login.");
         String username = console.promptForString("Username: ");
         String password = console.promptForString("Password: ");
         return new UserCredentials(username, password);

@@ -65,7 +65,7 @@ public class SystemInOutConsole implements BasicConsole {
     public void printBanner(TextEffect effect, String message) {
         TextGrid.Builder builder = new TextGrid.Builder(1, true).setHorizontalCellPadding(1);
         builder.addCell(effect, message);
-        System.out.println(builder.generate().toString());
+        printMessage(builder.generate().toString(), false);
     }
 
     @Override
