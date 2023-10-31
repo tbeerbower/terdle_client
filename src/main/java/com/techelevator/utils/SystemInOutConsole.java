@@ -7,13 +7,13 @@ import java.util.Scanner;
 
 /**
  * SystemInOutConsole is a class that provides text-based UI functionality using System.in and System.out.
- *
  * This could be abstracted further to use any InputStream and PrintStream, but System.in
  * and System.out have been used intentionally to facilitate understanding by beginners.
  */
 
 public class SystemInOutConsole implements BasicConsole {
 
+    // ***** Colr effect for error messages
     private static final TextEffect ERROR_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_RED, TextEffect.Code.BLACK);
 
     private final Scanner input = new Scanner(System.in);
@@ -73,42 +73,6 @@ public class SystemInOutConsole implements BasicConsole {
         for (String item : items) {
             System.out.println("* " + item);
         }
-    }
-
-    @Override
-    public String getMenuSelection(String[] options) {
-        return getMenuSelection(options, false);
-    }
-
-    @Override
-    public String getMenuSelection(String[] options, boolean allowNullResponse) {
-        Integer index = getMenuSelectionIndex(options, allowNullResponse);
-        return index == null ? null : options[index];
-    }
-
-    @Override
-    public Integer getMenuSelectionIndex(String[] options, boolean allowNullResponse) {
-        Integer result = null;
-        boolean validInput = false;
-        while (!validInput) {
-            for (int i = 0; i < options.length; i++) {
-                System.out.format("%d: %s\n", i + 1, options[i]);
-            }
-            Integer selection = promptForInteger("Please select: ");
-            if (selection == null) {
-                if (allowNullResponse) {
-                    validInput = true;
-                } else {
-                    printErrorMessage("Please make a selection");
-                }
-            } else if (selection > 0 && selection <= options.length) {
-                result = selection - 1;
-                validInput = true;
-            } else {
-                printErrorMessage("Invalid selection");
-            }
-        }
-        return result;
     }
 
     @Override

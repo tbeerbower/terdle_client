@@ -31,11 +31,6 @@ public interface BasicConsole {
 
     void printBulletedItems(String[] items);
 
-    String getMenuSelection(String[] options);
-    String getMenuSelection(String[] options, boolean allowNullResponse);
-
-    Integer getMenuSelectionIndex(String[] options, boolean allowNullResponse);
-
     String promptForString(String prompt);
     boolean promptForYesNo(String prompt);
     Integer promptForInteger(String prompt);
