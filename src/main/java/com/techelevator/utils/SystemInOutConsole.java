@@ -1,5 +1,8 @@
 package com.techelevator.utils;
 
+import io.github.tbeerbower.TextEffect;
+import io.github.tbeerbower.TextGrid;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
