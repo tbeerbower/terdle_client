@@ -1,5 +1,7 @@
 package com.techelevator.utils;
 
+import io.github.tbeerbower.TextEffect;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
