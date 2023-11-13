@@ -4,6 +4,8 @@ import com.techelevator.model.*;
 import com.techelevator.services.AuthenticationService;
 import com.techelevator.services.GameService;
 import com.techelevator.utils.*;
+import io.github.tbeerbower.TextEffect;
+import io.github.tbeerbower.TextGrid;
 
 import java.util.List;
 

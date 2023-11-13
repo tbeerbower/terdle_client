@@ -19,6 +19,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.github.tbeerbower</groupId>
+            <artifactId>text-grid</artifactId>
+            <version>0.1.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
