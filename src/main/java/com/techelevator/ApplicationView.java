@@ -6,6 +6,7 @@ import com.techelevator.model.UserGame;
 import com.techelevator.utils.BasicConsole;
 import io.github.tbeerbower.TextEffect;
 import io.github.tbeerbower.TextGrid;
+import com.techelevator.utils.MenuSystem;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,6 @@ public class ApplicationView {
     public static final int VERTICAL_CELL_PADDING = 1;
     public static final int HORIZONTAL_CELL_PADDING = 2;
 
-    private static final TextEffect ERROR_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_RED, TextEffect.Code.BLACK);
     private static final TextEffect SUCCESS_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_GREEN);
     private static final TextEffect NO_MATCH_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_WHITE, TextEffect.Code.BLACK);
     private static final TextEffect WRONG_LOCATION_COLORS = new TextEffect(TextEffect.Code.BACKGROUND_YELLOW, TextEffect.Code.BLACK);
@@ -58,8 +58,7 @@ public class ApplicationView {
      * @param message the message to show
      */
     public void displayErrorMessage(String message) {
-        console.printErrorMessage(ERROR_COLORS.apply(message));
-        console.printBlankLine();
+        console.printErrorMessage(message);
     }
 
     /**
@@ -67,8 +66,7 @@ public class ApplicationView {
      * @param message the message to show
      */
     public void displaySuccessMessage(String message) {
-        console.printErrorMessage(SUCCESS_COLORS.apply(message));
-        console.printBlankLine();
+        console.printBanner(SUCCESS_COLORS, message);
     }
 
     /**
@@ -98,7 +96,7 @@ public class ApplicationView {
      * @return a UserCredentials object
      */
     public UserCredentials promptForCredentials() {
-        console.printMessage("Please login.");
+        console.printBanner(MenuSystem.MENU_COLORS, "Please login.");
         String username = console.promptForString("Username: ");
         String password = console.promptForString("Password: ");
         return new UserCredentials(username, password);
