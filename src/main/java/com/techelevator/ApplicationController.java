@@ -152,7 +152,7 @@ public class ApplicationController {
             view.displayBlankLine();
             view.displayMessage(String.format("You have already played this game and made %d %s.",
                     guessNumber, guessNumber > 1 ? "guesses" : "guess"));
-            view.displayUserGameMatches(gameService.getGameMatches(userGame));
+            view.displayUserGameMatches(userGame.getMatches());
         }
 
         String word = userGame.getWord();
@@ -167,7 +167,7 @@ public class ApplicationController {
             userGame = gameService.getUserGame(userId, gameId);
             guesses = userGame.getGuesses();
             guessNumber = guesses.size();
-            view.displayUserGameMatches(gameService.getGameMatches(userGame));
+            view.displayUserGameMatches(userGame.getMatches());
         }
         if (userGame.isSuccess()) {
             view.displaySuccessMessage(String.format("You got it in %d %s!", guessNumber, guessNumber > 1 ? "tries" : "try"));

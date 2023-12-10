@@ -1,5 +1,8 @@
 package com.techelevator.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,12 +11,21 @@ public class UserGame extends Game {
     public enum Match {
         EXACT_MATCH,
         WRONG_LOCATION,
-        NO_MATCH
+        NO_MATCH;
+
+        @JsonValue
+        public String toValue() {
+            return name();
+        }
     }
 
     public static class MatchPair {
-        private final Match match;
-        private final char c;
+        private Match match;
+        @JsonProperty("char")
+        private char c;
+
+        public MatchPair() {
+        }
 
         public MatchPair(Match match, char c) {
             this.match = match;
@@ -31,6 +43,7 @@ public class UserGame extends Game {
 
     private int userId;
     private final List<String> guesses = new ArrayList<>();
+    private final List<UserGame.MatchPair[]> matches = new ArrayList<>();
     private boolean success;
 
     public UserGame() {
@@ -54,6 +67,10 @@ public class UserGame extends Game {
 
     public List<String> getGuesses() {
         return guesses;
+    }
+
+    public List<UserGame.MatchPair[]> getMatches() {
+    	return matches;
     }
 
     public boolean isSuccess() {
